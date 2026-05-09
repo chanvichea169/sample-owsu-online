@@ -38,7 +38,6 @@ export default function GlobalSearch<T extends { name?: string; category?: strin
     setSelectedIndex(0);
   }, [searchTerm]);
 
-  // Handle Keyboard Navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return;
