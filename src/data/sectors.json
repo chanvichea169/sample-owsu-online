@@ -1,0 +1,27 @@
+[
+  {
+    "label": "ការនិត្យានុកូលកម្ម(ការបញ្ជាក់លើឯកសារចម្លង)",
+    "value": "certification",
+    "code": "SEC_001"
+  },
+  {
+    "label": "វិស័យករៀបចំដែនដី នគរូបនីយកម្ម សំណង់ និង​សុរិយោដី",
+    "value": "land",
+    "code": "SEC_002"
+  },
+  {
+    "label": "វិស័យអប់រំ",
+    "value": "education",
+    "code": "SEC_003"
+  },
+  {
+    "label": "វិស័យពាណិជ្ជកម្ម",
+    "value": "commerce",
+    "code": "SEC_004"
+  },
+  {
+    "label": "វិស័យសំណង់",
+    "value": "construction",
+    "code": "SEC_005"
+  }
+]
