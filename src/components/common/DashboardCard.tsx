@@ -28,7 +28,7 @@ export default function DashboardCard({
         <Icon name={iconName} className="w-8 h-8" />
       </div>
       <div className="flex flex-col">
-        <span className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">
+        <span className="text-gray-500 text-xs font-bold uppercase mb-1">
           {title}
         </span>
         <span className="text-2xl font-extrabold text-gray-900 leading-none">

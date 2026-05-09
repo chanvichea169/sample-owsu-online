@@ -45,7 +45,7 @@ function InputField({ label, field, formData, onChange, type = "text", placehold
         disabled={disabled}
         value={(formData[field] as string) || ''}
         onChange={(e) => onChange(field, e.target.value)}
-        className={`w-full h-10 px-3 border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-sm transition-all
+        className={`w-full h-10 px-3 border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xl transition-all
           ${isGrey ? 'bg-[#eee]' : 'bg-white'}`}
         placeholder={placeholder}
       />

@@ -5,9 +5,13 @@ import RequestsPage from './pages/RequestsPage';
 import Sidebar from './components/common/Sidebar';
 import TopNavbar from './components/common/TopNavbar';
 import HomePage from './pages/HomePage';
+import GlobalAlert from './components/common/GlobalAlert';
+import { useAlert } from './context/AlertContext';
 
 export default function App() {
   const [activePage, setActivePage] = useState<PageType>('home');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { showAlert } = useAlert();
 
   const getPageTitle = () => {
     switch (activePage) {
@@ -28,8 +32,7 @@ export default function App() {
             onBack={() => setActivePage('home')}
             onComplete={() => {
               setActivePage('home');
-              // Optional: Show success message or refresh data
-              console.log('Request completed successfully');
+              showAlert('ពាក្យស្នើសុំត្រូវបានបញ្ជូនដោយជោគជ័យ!', 'success');
             }}
           />
         );
@@ -51,17 +54,24 @@ export default function App() {
 
   return (
     <div className="h-screen w-full bg-[#eef1f7] flex overflow-hidden">
+      <GlobalAlert />
       <Sidebar 
         activePage={activePage}
-        onNavigate={setActivePage}
+        onNavigate={(page) => {
+          setActivePage(page);
+          setIsSidebarOpen(false);
+        }}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopNavbar 
           pageTitle={getPageTitle()}
           onNewRequest={() => setActivePage('new-request')}
+          onMenuClick={() => setIsSidebarOpen(true)}
         />
-        
+
         <main className="flex-1 overflow-auto">
           {renderPage()}
         </main>

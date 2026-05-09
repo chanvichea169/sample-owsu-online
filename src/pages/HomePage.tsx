@@ -90,8 +90,8 @@ export default function HomePage({ onNewRequest, onNavigate }: HomePageProps) {
   ];
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="p-4 md:p-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-xl text-[#0070c0]">ផ្ទាំងគ្រប់គ្រង</h1>
           <p className="text-sm text-gray-500">សូមស្វាគមន៍មកកាន់ប្រព័ន្ធគ្រប់គ្រងសេវារដ្ឋបាល</p>
@@ -99,13 +99,13 @@ export default function HomePage({ onNewRequest, onNavigate }: HomePageProps) {
         <button
           type="button"
           onClick={onNewRequest}
-          className="inline-flex h-11 items-center justify-center whitespace-nowrap rounded-lg bg-[#0070c0] px-6 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#005c9e] hover:shadow-lg active:scale-95"
+          className="w-full sm:w-auto inline-flex h-11 items-center justify-center whitespace-nowrap rounded-lg bg-[#0070c0] px-6 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#005c9e] hover:shadow-lg active:scale-95"
         >
           + ដាក់ពាក្យស្នើសុំថ្មី
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
         {cards.map((card, index) => (
           <DashboardCard
             key={index}
