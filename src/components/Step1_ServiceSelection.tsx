@@ -116,7 +116,6 @@ export default function Step1_ServiceSelection({
         onSelect={handleSelectService}
         items={servicesData.services}
         searchPlaceholder="ស្វែងរកសេវា..."
-        title="ជ្រើសរើសសេវា"
       />
     </div>
   );
