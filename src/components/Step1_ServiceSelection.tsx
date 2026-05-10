@@ -3,14 +3,13 @@ import GlobalSearch from './GlobalSearch';
 import servicesData from '../data/services.json';
 import type { Service } from '../types/service.types';
 
-// Add sectors and adminServices to the props
 interface Step1Props {
   selectedService: Service | null;
   onSelectService: (service: Service) => void;
   quantity: number;
   onQuantityChange: (quantity: number) => void;
-  sectors: any[];        // Add this
-  adminServices: any[];  // Add this
+  sectors: any[];
+  adminServices: any[];
 }
 
 export default function Step1_ServiceSelection({
@@ -18,8 +17,8 @@ export default function Step1_ServiceSelection({
   onSelectService,
   quantity,
   onQuantityChange,
-  sectors,       // Destructure here
-  adminServices  // Destructure here
+  sectors,
+  adminServices
 }: Step1Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const total = selectedService ? selectedService.price * quantity : 0;
@@ -30,102 +29,111 @@ export default function Step1_ServiceSelection({
   };
 
   return (
-    <div className="bg-[#f8f9fa] p-6 border border-gray-300 rounded-sm space-y-6 text-[#444] font-khmer">
+    <div className="bg-[#f8f9fa] p-4 md:p-6 border border-gray-300 rounded-sm space-y-6 text-[#444] font-khmer">
       {/* Title */}
-      <h3 className="text-lg font-bold border-b border-gray-300 pb-2">ព័ត៌មានសេវារដ្ឋបាល</h3>
+      <h3 className="text-base md:text-lg font-bold border-b border-gray-300 pb-2">
+        ព័ត៌មានសេវារដ្ឋបាល
+      </h3>
 
       {/* Service Search Row */}
-      <div className="space-y-1">
+      <div className="space-y-2">
         <label className="text-sm font-semibold">សេវារដ្ឋបាល</label>
-        <div className="flex gap-2 p-2 bg-[#eee] border border-gray-300 rounded-md">
-          <div className="flex-1 bg-transparent px-2 py-1 min-h-[40px] text-gray-700 font-medium">
+        <div className="flex flex-col sm:flex-row gap-2 p-2 bg-[#eee] border border-gray-300 rounded-md">
+          <div className="flex-1 bg-transparent px-2 py-2 sm:py-1 min-h-[40px] text-gray-700 text-sm md:text-base font-medium leading-relaxed">
             {selectedService?.name || "សូមជ្រើសរើសសេវា..."}
           </div>
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="px-4 py-1 bg-white border border-gray-400 rounded hover:bg-gray-50 text-sm shadow-sm transition-colors"
+            className="w-full sm:w-auto px-6 py-2 bg-white border border-gray-400 rounded hover:bg-gray-50 text-sm shadow-sm font-bold transition-colors active:scale-95"
           >
             ស្វែងរកសេវា
           </button>
         </div>
       </div>
 
-      {/* Details Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      {/* Details Grid - Responsive Logic */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+        {/* Row 1: Price */}
         <div className="space-y-1">
-          <label className="text-xs font-semibold">តម្លៃសេវា (ជារៀល)</label>
-          <div className="w-full p-2 bg-[#eee] border border-gray-300 rounded h-10 flex items-center">
+          <label className="text-[11px] md:text-xs font-bold text-gray-500 uppercase">តម្លៃសេវា (រៀល)</label>
+          <div className="w-full p-2 bg-[#eee] border border-gray-200 rounded h-11 flex items-center font-bold text-gray-700">
             {selectedService ? selectedService.price.toLocaleString() : ""}
           </div>
         </div>
 
+        {/* Row 2: Quantity */}
         <div className="space-y-1">
-          <label className="text-xs font-semibold">ចំនួន</label>
+          <label className="text-[11px] md:text-xs font-bold text-gray-500 uppercase">ចំនួន</label>
           <input
             type="number"
             min="1"
             value={quantity}
             onChange={(e) => onQuantityChange(parseInt(e.target.value) || 0)}
-            className="w-full p-2 bg-white border border-gray-400 rounded h-10 outline-none focus:border-blue-500"
+            className="w-full p-2 bg-white border border-gray-400 rounded h-11 outline-none focus:border-[#0070c0] focus:ring-2 focus:ring-blue-100 font-bold"
           />
         </div>
 
-        <div className="space-y-1">
-          <label className="text-xs font-semibold">សរុប (ជារៀល)</label>
-          <div className="w-full p-2 bg-[#eee] border border-gray-300 rounded h-10 flex items-center text-[#0070c0] font-bold">
+        {/* Row 3: Total - Highlighting on mobile */}
+        <div className="space-y-1 sm:col-span-2 md:col-span-1">
+          <label className="text-[11px] md:text-xs font-bold text-gray-500 uppercase">សរុប (រៀល)</label>
+          <div className="w-full p-2 bg-[#e7f3ff] border border-blue-200 text-[#0070c0] rounded h-11 flex items-center font-black">
             {total.toLocaleString()}
           </div>
         </div>
 
+        {/* Row 4: Duration */}
         <div className="space-y-1">
-          <label className="text-xs font-semibold">រយៈពេលផ្តល់សេវា (ថ្ងៃធ្វើការ)</label>
-          <div className="w-full p-2 bg-[#eee] border border-gray-300 rounded h-10 flex items-center">
+          <label className="text-[11px] md:text-xs font-bold text-gray-500 uppercase">រយៈពេល (ថ្ងៃ)</label>
+          <div className="w-full p-2 bg-[#eee] border border-gray-200 rounded h-11 flex items-center text-gray-600">
             {selectedService?.duration || ""}
           </div>
         </div>
 
+        {/* Row 5: Validity */}
         <div className="space-y-1">
-          <label className="text-xs font-semibold">សុពលភាព</label>
-          <div className="w-full p-2 bg-[#eee] border border-gray-300 rounded h-10 flex items-center">
+          <label className="text-[11px] md:text-xs font-bold text-gray-500 uppercase">សុពលភាព</label>
+          <div className="w-full p-2 bg-[#eee] border border-gray-200 rounded h-11 flex items-center text-gray-600">
             {selectedService?.validity || ""}
           </div>
         </div>
       </div>
 
       {/* Required Documents Section */}
-      {selectedService && selectedService.requirements && (
-        <div className="mt-6 space-y-2 border-t border-gray-200 pt-4 animate-in fade-in duration-300">
-          <h4 className="font-bold text-sm">ឯកសារត្រូវភ្ជាប់មកជាមួយ ៖</h4>
-          <ul className="list-decimal ml-8 text-sm space-y-1">
+      {selectedService && (
+        <div className="mt-6 space-y-3 border-t border-gray-200 pt-5 animate-in fade-in duration-500">
+          <h4 className="font-bold text-sm text-[#0070c0]">ឯកសារត្រូវភ្ជាប់មកជាមួយ ៖</h4>
+          <ul className="space-y-2">
             {selectedService.requirements.map((req, idx) => (
-              <li key={idx}>{req}</li>
+              <li key={idx} className="flex gap-3 text-sm leading-relaxed">
+                <span className="flex-shrink-0 w-5 h-5 bg-blue-100 text-[#0070c0] rounded-full flex items-center justify-center text-[10px] font-bold">
+                  {idx + 1}
+                </span>
+                {req}
+              </li>
             ))}
           </ul>
           
-          <div className="mt-4 text-xs space-y-1">
-            <p className="text-red-600 font-bold italic">
-              👉 សម្គាល់ : នៅពេលលោក-លោកស្រីមកទទួលលទ្ធផលសម្រេច សូមភ្ជាប់មកជាមួយនូវ :
+          <div className="mt-6 p-4 bg-red-50 rounded-lg border border-red-100 space-y-2">
+            <p className="text-red-600 text-xs font-bold italic flex items-center gap-2">
+              <span>👉</span> សម្គាល់ : នៅពេលលោក-លោកស្រីមកទទួលលទ្ធផលសម្រេច សូមភ្ជាប់មកជាមួយនូវ :
             </p>
-            <p className="text-red-600 ml-4">- ពាក្យស្នើសុំសេវាដែលមានចុះហត្ថលេខារបស់អ្នកស្នើសុំសេវា</p>
-            <p className="text-red-600 ml-4">- ឯកសារពាក់ព័ន្ធផ្សេងៗ (ច្បាប់ដើម) ។</p>
+            <div className="ml-6 space-y-1">
+              <p className="text-red-600 text-[11px] font-medium">- ពាក្យស្នើសុំសេវាដែលមានចុះហត្ថលេខារបស់អ្នកស្នើសុំ</p>
+              <p className="text-red-600 text-[11px] font-medium">- ឯកសារពាក់ព័ន្ធផ្សេងៗ (ច្បាប់ដើម) ។</p>
+            </div>
           </div>
         </div>
       )}
 
-      {/* MODAL CALL - This is where the magic happens */}
       <GlobalSearch
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSelect={handleSelectService}
         items={servicesData.services}
-        sectors={sectors} // Passing the data
-        adminServices={adminServices} // Passing the data
-        searchPlaceholder="ស្វែងរកសេវា..." selectedService={null} onSelectService={function (): void {
-          throw new Error('Function not implemented.');
-        } } quantity={0} onQuantityChange={function (): void {
-          throw new Error('Function not implemented.');
-        } }
+        sectors={sectors}
+        adminServices={adminServices}
+        searchPlaceholder="ស្វែងរកសេវា..."
       />
     </div>
   );

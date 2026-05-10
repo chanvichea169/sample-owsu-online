@@ -7,8 +7,6 @@ import Step4_PaymentFinalization from './Step4_PaymentFinalization';
 import Step5_ApplicationReview from './Step5_ApplicationReview';
 
 import type { Service, ApplicantInfo, DocumentInfo, PaymentInfo } from '../types/service.types';
-import sectorsData from '../data/sectors.json';
-import adminServicesData from '../data/adminServices.json';
 
 interface ServiceWizardProps {
   onComplete?: () => void;
@@ -21,12 +19,12 @@ export default function ServiceWizard({ onComplete, onCancel }: ServiceWizardPro
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [quantity, setQuantity] = useState(1);
   
-  const [applicantInfo, setApplicantInfo] = useState<ApplicantInfo>({
+  const [applicantInfo, setApplicantInfo] = useState<ApplicantInfo>(() => ({
     applicantCode: 'APP-' + Math.floor(Math.random() * 100000).toString().padStart(5, '0'),
     idNumber: '', lastNameKh: '', firstNameKh: '', lastNameEn: '', firstNameEn: '',
     gender: 'ប្រុស', nationality: 'ខ្មែរ', dateOfBirth: '', phoneNumber: '',
     province: '', district: '', commune: '', village: ''
-  });
+  }));
 
   const [documentInfo, setDocumentInfo] = useState<DocumentInfo>({
     documentType: '', documentNumber: '', issueDate: '', expiryDate: '', location: '', attachments: []
@@ -38,7 +36,7 @@ export default function ServiceWizard({ onComplete, onCancel }: ServiceWizardPro
 
   const steps = [
     { number: 1, title: "ព័ត៌មានសេវារដ្ឋបាល" },
-    { number: 2, title: "ព័ត៌មានអ្នកដាក់ពាក្យ" },
+    { number: 2, title: "ព័ត៌មានម្ចាស់បណ្ណ" },
     { number: 3, title: "ទីតាំងអង្គភាពច្រក.១" },
     { number: 4, title: "ឯកសារភ្ជាប់" },
     { number: 5, title: "ពិនិត្យពាក្យស្នើសុំ" }
@@ -93,10 +91,7 @@ export default function ServiceWizard({ onComplete, onCancel }: ServiceWizardPro
             selectedService={selectedService}
             onSelectService={setSelectedService}
             quantity={quantity}
-            onQuantityChange={setQuantity}
-            sectors={sectorsData}
-            adminServices={adminServicesData}
-          />
+            onQuantityChange={setQuantity} sectors={[]} adminServices={[]}          />
         );
       case 2: return <Step2_ApplicantDetails applicantInfo={applicantInfo} onUpdateApplicant={setApplicantInfo} />;
       case 3: return <Step3_PositionToRecieve documentInfo={documentInfo} onUpdateDocument={setDocumentInfo} />;
