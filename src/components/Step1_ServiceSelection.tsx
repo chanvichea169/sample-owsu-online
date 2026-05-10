@@ -119,10 +119,13 @@ export default function Step1_ServiceSelection({
         onClose={() => setIsModalOpen(false)}
         onSelect={handleSelectService}
         items={servicesData.services}
-        sectors={sectors}           // Passing the data
+        sectors={sectors} // Passing the data
         adminServices={adminServices} // Passing the data
-        searchPlaceholder="ស្វែងរកសេវា..."
-        labelKey="name"
+        searchPlaceholder="ស្វែងរកសេវា..." selectedService={null} onSelectService={function (): void {
+          throw new Error('Function not implemented.');
+        } } quantity={0} onQuantityChange={function (): void {
+          throw new Error('Function not implemented.');
+        } }
       />
     </div>
   );

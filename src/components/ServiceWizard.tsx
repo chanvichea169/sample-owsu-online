@@ -39,7 +39,7 @@ export default function ServiceWizard({ onComplete, onCancel }: ServiceWizardPro
   const steps = [
     { number: 1, title: "ព័ត៌មានសេវារដ្ឋបាល" },
     { number: 2, title: "ព័ត៌មានអ្នកដាក់ពាក្យ" },
-    { number: 3, title: "ទីតាំងអង្គភាពច្រកចេញចូលតែមួយ" },
+    { number: 3, title: "ទីតាំងអង្គភាពច្រក.១" },
     { number: 4, title: "ឯកសារភ្ជាប់" },
     { number: 5, title: "ពិនិត្យពាក្យស្នើសុំ" }
   ];

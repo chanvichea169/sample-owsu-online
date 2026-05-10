@@ -1,208 +1,148 @@
-import { useState, useEffect, useRef } from 'react';
-import { X, ChevronRight, CornerDownLeft, ChevronDown, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
+import GlobalSearch from './GlobalSearch';
+import servicesData from '../data/services.json';
+import type { Service } from '../types/service.types';
 
-interface FilterOption {
-  label: string;
-  value: string;
-  code: string;
-}
-
-interface GlobalSearchProps<T> {
-  isOpen: boolean;
-  onClose: () => void;
-  onSelect: (item: T) => void;
-  items: T[];
-  sectors: FilterOption[];      // Your sectors.json
-  adminServices: FilterOption[]; // Your adminServices.json
+interface Step1Props {
+  selectedService: Service | null;
+  onSelectService: (service: Service) => void;
+  quantity: number;
+  onQuantityChange: (quantity: number) => void;
+  sectors: any[];
+  adminServices: any[];
+  isOpen?: boolean;
+  onClose?: () => void;
+  onSelect?: (service: Service) => void;
+  items?: any[];
   searchPlaceholder?: string;
-  labelKey?: keyof T;
 }
 
-export default function GlobalSearch<T extends { name?: string; sectorCode?: string; adminCode?: string; [key: string]: any }>({
-  isOpen,
-  onClose,
-  onSelect,
-  items = [],
-  sectors = [], // Default to empty array to prevent .map errors
-  adminServices = [],
-  searchPlaceholder = "ស្វែងរក និងជ្រើសរើសសេវា",
-  labelKey = "name" as keyof T
-}: GlobalSearchProps<T>) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  
-  const [selectedAdminCode, setSelectedAdminCode] = useState('');
-  const [selectedSectorCode, setSelectedSectorCode] = useState('');
+export default function Step1_ServiceSelection({
+  selectedService,
+  onSelectService,
+  quantity,
+  onQuantityChange,
+  sectors,
+  adminServices
+}: Step1Props) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const total = selectedService ? selectedService.price * quantity : 0;
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const filterRef = useRef<HTMLDivElement>(null);
-
-  // 1. FILTER LOGIC
-  const filteredItems = items.filter(item => {
-    const matchesSearch = String(item[labelKey] || '').toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesAdmin = !selectedAdminCode || item.adminCode === selectedAdminCode;
-    const matchesSector = !selectedSectorCode || item.sectorCode === selectedSectorCode;
-    return matchesSearch && matchesAdmin && matchesSector;
-  });
-
-  // 2. CLOSE DROPDOWN ON OUTSIDE CLICK
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
-        setIsFilterOpen(false);
-      }
-    };
-    if (isFilterOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isFilterOpen]);
-
-  // 3. KEYBOARD NAV
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return;
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setSelectedIndex(prev => (prev < filteredItems.length - 1 ? prev + 1 : prev));
-      }
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setSelectedIndex(prev => (prev > 0 ? prev - 1 : 0));
-      }
-      if (e.key === 'Enter' && filteredItems.length > 0) {
-        onSelect(filteredItems[selectedIndex]);
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, filteredItems, selectedIndex, onClose, onSelect]);
-
-  if (!isOpen) return null;
+  const handleSelectService = (service: Service) => {
+    onSelectService(service);
+    setIsModalOpen(false);
+  };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm font-khmer">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl flex flex-col h-[90vh] relative animate-in fade-in zoom-in-95 duration-200">
-        
-        {/* Header */}
-        <div className="bg-[#0070c0] px-8 py-5 flex justify-between items-center text-white shrink-0 rounded-t-2xl">
-          <h2 className="text-xl font-medium tracking-wide">ស្វែងរក និងជ្រើសរើសសេវា</h2>
-          <button onClick={onClose} className="hover:bg-white/20 rounded-full p-2"><X size={28} /></button>
+    <div className="bg-[#f8f9fa] p-4 md:p-6 border border-gray-300 rounded-sm space-y-6 text-[#444] font-khmer">
+      {/* Title */}
+      <h3 className="text-base md:text-lg font-bold border-b border-gray-300 pb-2">
+        ព័ត៌មានសេវារដ្ឋបាល
+      </h3>
+
+      {/* Service Search Row */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold">សេវារដ្ឋបាល</label>
+        <div className="flex flex-col sm:flex-row gap-2 p-2 bg-[#eee] border border-gray-300 rounded-md">
+          <div className="flex-1 bg-transparent px-2 py-2 sm:py-1 min-h-[40px] text-gray-700 text-sm md:text-base font-medium leading-relaxed">
+            {selectedService?.name || "សូមជ្រើសរើសសេវា..."}
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="w-full sm:w-auto px-6 py-2 bg-white border border-gray-400 rounded hover:bg-gray-50 text-sm shadow-sm font-bold transition-colors active:scale-95"
+          >
+            ស្វែងរកសេវា
+          </button>
         </div>
+      </div>
 
-        {/* Search & Filter Bar */}
-        <div className="p-8 border-b bg-white relative z-[120]">
-          <div className="flex items-center border-2 border-gray-200 rounded-2xl shadow-sm focus-within:border-[#0070c0] bg-white">
-            <input 
-              autoFocus
-              type="text" 
-              placeholder={searchPlaceholder}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 px-8 py-5 text-lg outline-none bg-transparent"
-            />
-            <div className="h-10 w-[2px] bg-gray-100"></div>
-            
-            {/* FILTER BUTTON */}
-            <div className="relative" ref={filterRef}>
-              <button 
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation(); 
-                  setIsFilterOpen(!isFilterOpen);
-                }}
-                className={`px-8 py-5 flex items-center gap-3 text-base font-medium border-l border-gray-100 ${
-                  isFilterOpen || selectedAdminCode || selectedSectorCode ? 'text-[#0070c0] bg-blue-50' : 'text-gray-600'
-                }`}
-              >
-                <span>ច្រោះ</span>
-                <ChevronDown size={20} className={isFilterOpen ? 'rotate-180 transition-transform' : ''} />
-              </button>
-
-              {/* DROPDOWN MENU */}
-              {isFilterOpen && (
-                <div className="absolute right-0 top-full mt-4 w-[500px] bg-white border border-gray-200 rounded-2xl shadow-2xl p-8 z-[130] animate-in fade-in slide-in-from-top-4">
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-bold text-[#0070c0] text-sm uppercase">ជម្រើសចម្រោះ</h3>
-                    <button 
-                      onClick={() => { setSelectedAdminCode(''); setSelectedSectorCode(''); }}
-                      className="text-xs text-red-500 flex items-center gap-1 hover:underline"
-                    >
-                      <RotateCcw size={14} /> សម្អាត
-                    </button>
-                  </div>
-
-                  <div className="space-y-6">
-                    {/* Admin Services Selection */}
-                    <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase mb-2">សេវារដ្ឋបាល</label>
-                      <select 
-                        value={selectedAdminCode}
-                        onChange={(e) => setSelectedAdminCode(e.target.value)}
-                        className="w-full border-2 border-gray-100 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-blue-400 cursor-pointer"
-                      >
-                        <option value="">សេវារដ្ឋបាល</option>
-                        {adminServices.map((admin) => (
-                          <option key={admin.code} value={admin.code}>
-                            {admin.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Sectors Selection */}
-                    <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase mb-2">វិស័យ</label>
-                      <select 
-                        value={selectedSectorCode}
-                        onChange={(e) => setSelectedSectorCode(e.target.value)}
-                        className="w-full border-2 border-gray-100 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-blue-400 cursor-pointer"
-                      >
-                        <option value="">វិស័យ</option>
-                        {sectors.map((sector) => (
-                          <option key={sector.code} value={sector.code}>
-                            {sector.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+      {/* Details Grid - Responsive Logic */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+        {/* Row 1: Price */}
+        <div className="space-y-1">
+          <label className="text-[11px] md:text-xs font-bold text-gray-500 uppercase">តម្លៃសេវា (រៀល)</label>
+          <div className="w-full p-2 bg-[#eee] border border-gray-200 rounded h-11 flex items-center font-bold text-gray-700">
+            {selectedService ? selectedService.price.toLocaleString() : ""}
           </div>
         </div>
 
-        {/* Results */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto bg-gray-50/20 z-10">
-          {filteredItems.length > 0 ? (
-            <div className="divide-y divide-gray-100">
-              {filteredItems.map((item, index) => (
-                <button
-                  key={index}
-                  onClick={() => { onSelect(item); onClose(); }}
-                  onMouseEnter={() => setSelectedIndex(index)}
-                  className={`w-full text-left px-10 py-6 flex items-center gap-6 ${
-                    index === selectedIndex ? 'bg-[#0070c0] text-white' : 'bg-white text-gray-700'
-                  }`}
-                >
-                  <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center ${
-                    index === selectedIndex ? 'border-white bg-white/20' : 'border-gray-300'
-                  }`}>
-                    <ChevronRight size={22} />
-                  </div>
-                  <div className="flex-1 text-lg font-medium">{String(item[labelKey] || '')}</div>
-                  {index === selectedIndex && <CornerDownLeft size={24} className="opacity-70" />}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-400 text-xl">មិនមានទិន្នន័យ</div>
-          )}
+        {/* Row 2: Quantity */}
+        <div className="space-y-1">
+          <label className="text-[11px] md:text-xs font-bold text-gray-500 uppercase">ចំនួន</label>
+          <input
+            type="number"
+            min="1"
+            value={quantity}
+            onChange={(e) => onQuantityChange(parseInt(e.target.value) || 0)}
+            className="w-full p-2 bg-white border border-gray-400 rounded h-11 outline-none focus:border-[#0070c0] focus:ring-2 focus:ring-blue-100 font-bold"
+          />
+        </div>
+
+        {/* Row 3: Total - Highlighting on mobile */}
+        <div className="space-y-1 sm:col-span-2 md:col-span-1">
+          <label className="text-[11px] md:text-xs font-bold text-gray-500 uppercase">សរុប (រៀល)</label>
+          <div className="w-full p-2 bg-[#e7f3ff] border border-blue-200 text-[#0070c0] rounded h-11 flex items-center font-black">
+            {total.toLocaleString()}
+          </div>
+        </div>
+
+        {/* Row 4: Duration */}
+        <div className="space-y-1">
+          <label className="text-[11px] md:text-xs font-bold text-gray-500 uppercase">រយៈពេល (ថ្ងៃ)</label>
+          <div className="w-full p-2 bg-[#eee] border border-gray-200 rounded h-11 flex items-center text-gray-600">
+            {selectedService?.duration || ""}
+          </div>
+        </div>
+
+        {/* Row 5: Validity */}
+        <div className="space-y-1">
+          <label className="text-[11px] md:text-xs font-bold text-gray-500 uppercase">សុពលភាព</label>
+          <div className="w-full p-2 bg-[#eee] border border-gray-200 rounded h-11 flex items-center text-gray-600">
+            {selectedService?.validity || ""}
+          </div>
         </div>
       </div>
+
+      {/* Required Documents Section */}
+      {selectedService && (
+        <div className="mt-6 space-y-3 border-t border-gray-200 pt-5 animate-in fade-in duration-500">
+          <h4 className="font-bold text-sm text-[#0070c0]">ឯកសារត្រូវភ្ជាប់មកជាមួយ ៖</h4>
+          <ul className="space-y-2">
+            {selectedService.requirements.map((req, idx) => (
+              <li key={idx} className="flex gap-3 text-sm leading-relaxed">
+                <span className="flex-shrink-0 w-5 h-5 bg-blue-100 text-[#0070c0] rounded-full flex items-center justify-center text-[10px] font-bold">
+                  {idx + 1}
+                </span>
+                {req}
+              </li>
+            ))}
+          </ul>
+          
+          <div className="mt-6 p-4 bg-red-50 rounded-lg border border-red-100 space-y-2">
+            <p className="text-red-600 text-xs font-bold italic flex items-center gap-2">
+              <span>👉</span> សម្គាល់ : នៅពេលលោក-លោកស្រីមកទទួលលទ្ធផលសម្រេច សូមភ្ជាប់មកជាមួយនូវ :
+            </p>
+            <div className="ml-6 space-y-1">
+              <p className="text-red-600 text-[11px] font-medium">- ពាក្យស្នើសុំសេវាដែលមានចុះហត្ថលេខារបស់អ្នកស្នើសុំ</p>
+              <p className="text-red-600 text-[11px] font-medium">- ឯកសារពាក់ព័ន្ធផ្សេងៗ (ច្បាប់ដើម) ។</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <GlobalSearch
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSelect={handleSelectService}
+        items={servicesData.services}
+        sectors={sectors}
+        adminServices={adminServices}
+        searchPlaceholder="ស្វែងរកសេវា..." selectedService={null} onSelectService={function (): void {
+          throw new Error('Function not implemented.');
+        } } quantity={0} onQuantityChange={function (): void {
+          throw new Error('Function not implemented.');
+        } }      />
     </div>
   );
 }
