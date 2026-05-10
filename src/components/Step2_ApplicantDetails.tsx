@@ -123,8 +123,8 @@ export default function Step2_ApplicantDetails({ applicantInfo, onUpdateApplican
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <InputField label="ខេត្ត/ក្រុង" field="province" formData={formData} onChange={handleChange} placeholder="ជ្រើសរើស" />
-          <InputField label="ស្រុក/ខណ្ឌ" field="district" formData={formData} onChange={handleChange} placeholder="ជ្រើសរើស" />
+          <InputField label="រាជធានី/ខេត្ត" field="province" formData={formData} onChange={handleChange} placeholder="ជ្រើសរើស" />
+          <InputField label="ក្រុង/ស្រុក/ខណ្ឌ" field="district" formData={formData} onChange={handleChange} placeholder="ជ្រើសរើស" />
           <InputField label="ឃុំ/សង្កាត់" field="commune" formData={formData} onChange={handleChange} placeholder="ជ្រើសរើស" />
           <InputField label="ភូមិ" field="village" formData={formData} onChange={handleChange} placeholder="ជ្រើសរើស" />
         </div>

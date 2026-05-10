@@ -2,6 +2,8 @@ export interface Service {
   id: number;
   name: string;
   category: string;
+  sectorCode?: string;
+  adminCode?: string;
   price: number;
   duration: number;
   validity: string;

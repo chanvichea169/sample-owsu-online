@@ -3,18 +3,23 @@ import GlobalSearch from './GlobalSearch';
 import servicesData from '../data/services.json';
 import type { Service } from '../types/service.types';
 
+// Add sectors and adminServices to the props
 interface Step1Props {
   selectedService: Service | null;
   onSelectService: (service: Service) => void;
   quantity: number;
   onQuantityChange: (quantity: number) => void;
+  sectors: any[];        // Add this
+  adminServices: any[];  // Add this
 }
 
 export default function Step1_ServiceSelection({
   selectedService,
   onSelectService,
   quantity,
-  onQuantityChange
+  onQuantityChange,
+  sectors,       // Destructure here
+  adminServices  // Destructure here
 }: Step1Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const total = selectedService ? selectedService.price * quantity : 0;
@@ -25,23 +30,21 @@ export default function Step1_ServiceSelection({
   };
 
   return (
-    <div className="bg-[#f8f9fa] p-6 border border-gray-300 rounded-sm space-y-6 text-[#444]">
+    <div className="bg-[#f8f9fa] p-6 border border-gray-300 rounded-sm space-y-6 text-[#444] font-khmer">
       {/* Title */}
       <h3 className="text-lg font-bold border-b border-gray-300 pb-2">ព័ត៌មានសេវារដ្ឋបាល</h3>
 
       {/* Service Search Row */}
       <div className="space-y-1">
-        <label className="text-sm font-semibold">
-          សេវារដ្ឋបាល
-        </label>
+        <label className="text-sm font-semibold">សេវារដ្ឋបាល</label>
         <div className="flex gap-2 p-2 bg-[#eee] border border-gray-300 rounded-md">
-          <div className="flex-1 bg-transparent px-2 py-1 min-h-[40px] text-gray-700">
-            {selectedService?.name || ""}
+          <div className="flex-1 bg-transparent px-2 py-1 min-h-[40px] text-gray-700 font-medium">
+            {selectedService?.name || "សូមជ្រើសរើសសេវា..."}
           </div>
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="px-4 py-1 bg-white border border-gray-400 rounded hover:bg-gray-50 text-sm shadow-sm"
+            className="px-4 py-1 bg-white border border-gray-400 rounded hover:bg-gray-50 text-sm shadow-sm transition-colors"
           >
             ស្វែងរកសេវា
           </button>
@@ -70,7 +73,7 @@ export default function Step1_ServiceSelection({
 
         <div className="space-y-1">
           <label className="text-xs font-semibold">សរុប (ជារៀល)</label>
-          <div className="w-full p-2 bg-[#eee] border border-gray-300 rounded h-10 flex items-center">
+          <div className="w-full p-2 bg-[#eee] border border-gray-300 rounded h-10 flex items-center text-[#0070c0] font-bold">
             {total.toLocaleString()}
           </div>
         </div>
@@ -91,8 +94,8 @@ export default function Step1_ServiceSelection({
       </div>
 
       {/* Required Documents Section */}
-      {selectedService && (
-        <div className="mt-6 space-y-2 border-t border-gray-200 pt-4">
+      {selectedService && selectedService.requirements && (
+        <div className="mt-6 space-y-2 border-t border-gray-200 pt-4 animate-in fade-in duration-300">
           <h4 className="font-bold text-sm">ឯកសារត្រូវភ្ជាប់មកជាមួយ ៖</h4>
           <ul className="list-decimal ml-8 text-sm space-y-1">
             {selectedService.requirements.map((req, idx) => (
@@ -110,12 +113,16 @@ export default function Step1_ServiceSelection({
         </div>
       )}
 
+      {/* MODAL CALL - This is where the magic happens */}
       <GlobalSearch
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSelect={handleSelectService}
         items={servicesData.services}
+        sectors={sectors}           // Passing the data
+        adminServices={adminServices} // Passing the data
         searchPlaceholder="ស្វែងរកសេវា..."
+        labelKey="name"
       />
     </div>
   );

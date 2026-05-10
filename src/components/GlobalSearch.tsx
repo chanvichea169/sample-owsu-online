@@ -1,48 +1,68 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Search, ChevronRight, CornerDownLeft, ArrowUp, ArrowDown } from 'lucide-react';
-import { Icon } from './common/Icon';
+import { X, ChevronRight, CornerDownLeft, ChevronDown, RotateCcw } from 'lucide-react';
+
+interface FilterOption {
+  label: string;
+  value: string;
+  code: string;
+}
 
 interface GlobalSearchProps<T> {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (item: T) => void;
   items: T[];
+  sectors: FilterOption[];      // Your sectors.json
+  adminServices: FilterOption[]; // Your adminServices.json
   searchPlaceholder?: string;
   labelKey?: keyof T;
 }
 
-export default function GlobalSearch<T extends { name?: string; category?: string; [key: string]: any }>({
+export default function GlobalSearch<T extends { name?: string; sectorCode?: string; adminCode?: string; [key: string]: any }>({
   isOpen,
   onClose,
   onSelect,
-  items,
-  searchPlaceholder = "ស្វែងរកសេវា...",
+  items = [],
+  sectors = [], // Default to empty array to prevent .map errors
+  adminServices = [],
+  searchPlaceholder = "ស្វែងរក និងជ្រើសរើសសេវា",
   labelKey = "name" as keyof T
 }: GlobalSearchProps<T>) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  
+  const [selectedAdminCode, setSelectedAdminCode] = useState('');
+  const [selectedSectorCode, setSelectedSectorCode] = useState('');
 
-  // Filter logic
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  // 1. FILTER LOGIC
   const filteredItems = items.filter(item => {
-    const label = String(item[labelKey] || '');
-    const category = String(item.category || '');
-    return (
-      label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const matchesSearch = String(item[labelKey] || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesAdmin = !selectedAdminCode || item.adminCode === selectedAdminCode;
+    const matchesSector = !selectedSectorCode || item.sectorCode === selectedSectorCode;
+    return matchesSearch && matchesAdmin && matchesSector;
   });
 
-  // Reset selection index when search changes
+  // 2. CLOSE DROPDOWN ON OUTSIDE CLICK
   useEffect(() => {
-    setSelectedIndex(0);
-  }, [searchTerm]);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+    if (isFilterOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isFilterOpen]);
 
+  // 3. KEYBOARD NAV
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return;
-
-      if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         setSelectedIndex(prev => (prev < filteredItems.length - 1 ? prev + 1 : prev));
@@ -56,7 +76,6 @@ export default function GlobalSearch<T extends { name?: string; category?: strin
         onClose();
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, filteredItems, selectedIndex, onClose, onSelect]);
@@ -64,116 +83,124 @@ export default function GlobalSearch<T extends { name?: string; category?: strin
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 pt-[10vh] bg-gray-950/40 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-[0_0_50px_-12px_rgba(0,0,0,0.25)] w-full max-w-2xl flex flex-col overflow-hidden animate-in slide-in-from-top-8 duration-300">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm font-khmer">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl flex flex-col h-[90vh] relative animate-in fade-in zoom-in-95 duration-200">
         
-        {/* Search Header */}
-        <div className="relative flex items-center px-5 py-4 border-b">
-          <Search className="h-5 w-5 text-[#0070c0]" />
-          <input 
-            autoFocus
-            type="text" 
-            placeholder={searchPlaceholder}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 px-4 text-lg outline-none placeholder:text-gray-400 font-khmer"
-          />
-          <kbd className="hidden sm:flex items-center gap-1 px-2 py-1 text-[10px] font-sans font-semibold text-gray-400 bg-gray-100 border rounded-md">
-            ESC
-          </kbd>
-          <button 
-            onClick={onClose}
-            className="ml-4 p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            <X size={20} />
-          </button>
+        {/* Header */}
+        <div className="bg-[#0070c0] px-8 py-5 flex justify-between items-center text-white shrink-0 rounded-t-2xl">
+          <h2 className="text-xl font-medium tracking-wide">ស្វែងរក និងជ្រើសរើសសេវា</h2>
+          <button onClick={onClose} className="hover:bg-white/20 rounded-full p-2"><X size={28} /></button>
         </div>
 
-        {/* Search Results */}
-        <div 
-          ref={scrollRef}
-          className="max-h-[50vh] overflow-y-auto custom-scrollbar bg-white"
-        >
-          {filteredItems.length === 0 ? (
-            <div className="px-10 py-16 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 mb-4">
-                <Search size={32} className="text-gray-200" />
-              </div>
-              <p className="text-gray-500 font-khmer">រកមិនឃើញសេវាដែលអ្នកកំពុងស្វែងរកទេ</p>
+        {/* Search & Filter Bar */}
+        <div className="p-8 border-b bg-white relative z-[120]">
+          <div className="flex items-center border-2 border-gray-200 rounded-2xl shadow-sm focus-within:border-[#0070c0] bg-white">
+            <input 
+              autoFocus
+              type="text" 
+              placeholder={searchPlaceholder}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1 px-8 py-5 text-lg outline-none bg-transparent"
+            />
+            <div className="h-10 w-[2px] bg-gray-100"></div>
+            
+            {/* FILTER BUTTON */}
+            <div className="relative" ref={filterRef}>
+              <button 
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation(); 
+                  setIsFilterOpen(!isFilterOpen);
+                }}
+                className={`px-8 py-5 flex items-center gap-3 text-base font-medium border-l border-gray-100 ${
+                  isFilterOpen || selectedAdminCode || selectedSectorCode ? 'text-[#0070c0] bg-blue-50' : 'text-gray-600'
+                }`}
+              >
+                <span>ច្រោះ</span>
+                <ChevronDown size={20} className={isFilterOpen ? 'rotate-180 transition-transform' : ''} />
+              </button>
+
+              {/* DROPDOWN MENU */}
+              {isFilterOpen && (
+                <div className="absolute right-0 top-full mt-4 w-[500px] bg-white border border-gray-200 rounded-2xl shadow-2xl p-8 z-[130] animate-in fade-in slide-in-from-top-4">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="font-bold text-[#0070c0] text-sm uppercase">ជម្រើសចម្រោះ</h3>
+                    <button 
+                      onClick={() => { setSelectedAdminCode(''); setSelectedSectorCode(''); }}
+                      className="text-xs text-red-500 flex items-center gap-1 hover:underline"
+                    >
+                      <RotateCcw size={14} /> សម្អាត
+                    </button>
+                  </div>
+
+                  <div className="space-y-6">
+                    {/* Admin Services Selection */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase mb-2">សេវារដ្ឋបាល</label>
+                      <select 
+                        value={selectedAdminCode}
+                        onChange={(e) => setSelectedAdminCode(e.target.value)}
+                        className="w-full border-2 border-gray-100 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-blue-400 cursor-pointer"
+                      >
+                        <option value="">សេវារដ្ឋបាល</option>
+                        {adminServices.map((admin) => (
+                          <option key={admin.code} value={admin.code}>
+                            {admin.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Sectors Selection */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase mb-2">វិស័យ</label>
+                      <select 
+                        value={selectedSectorCode}
+                        onChange={(e) => setSelectedSectorCode(e.target.value)}
+                        className="w-full border-2 border-gray-100 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-blue-400 cursor-pointer"
+                      >
+                        <option value="">វិស័យ</option>
+                        {sectors.map((sector) => (
+                          <option key={sector.code} value={sector.code}>
+                            {sector.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Results */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto bg-gray-50/20 z-10">
+          {filteredItems.length > 0 ? (
+            <div className="divide-y divide-gray-100">
+              {filteredItems.map((item, index) => (
+                <button
+                  key={index}
+                  onClick={() => { onSelect(item); onClose(); }}
+                  onMouseEnter={() => setSelectedIndex(index)}
+                  className={`w-full text-left px-10 py-6 flex items-center gap-6 ${
+                    index === selectedIndex ? 'bg-[#0070c0] text-white' : 'bg-white text-gray-700'
+                  }`}
+                >
+                  <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center ${
+                    index === selectedIndex ? 'border-white bg-white/20' : 'border-gray-300'
+                  }`}>
+                    <ChevronRight size={22} />
+                  </div>
+                  <div className="flex-1 text-lg font-medium">{String(item[labelKey] || '')}</div>
+                  {index === selectedIndex && <CornerDownLeft size={24} className="opacity-70" />}
+                </button>
+              ))}
             </div>
           ) : (
-            <div className="p-2">
-              <div className="px-3 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-widest flex justify-between">
-                <span>លទ្ធផលស្វែងរក</span>
-                <span>{filteredItems.length} សេវា</span>
-              </div>
-              
-              {filteredItems.map((item, index) => {
-                const isSelected = index === selectedIndex;
-                return (
-                  <button
-                    key={index}
-                    onMouseEnter={() => setSelectedIndex(index)}
-                    onClick={() => {
-                      onSelect(item);
-                      onClose();
-                    }}
-                    className={`
-                      w-full text-left px-4 py-3 rounded-xl flex items-center justify-between transition-all duration-200
-                      ${isSelected ? 'bg-blue-50 ring-1 ring-[#0070c0]/10' : 'hover:bg-gray-50'}
-                    `}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`
-                        w-11 h-11 rounded-lg flex items-center justify-center transition-colors
-                        ${isSelected ? 'bg-white text-[#0070c0] shadow-sm' : 'bg-gray-100 text-gray-500'}
-                      `}>
-                        <Icon name="fileText" className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className={`font-semibold font-khmer transition-colors ${isSelected ? 'text-[#0070c0]' : 'text-gray-900'}`}>
-                          {String(item[labelKey] || '')}
-                        </div>
-                        <div className="text-xs text-gray-400 flex items-center gap-1">
-                          <span className="bg-gray-200/50 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold tracking-tighter">
-                            {String(item.category || 'ទូទៅ')}
-                          </span>
-                          {item.code && <span>• {item.code}</span>}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {isSelected ? (
-                      <div className="flex items-center gap-2 text-[#0070c0] animate-in fade-in slide-in-from-right-2">
-                        <span className="text-[10px] font-bold font-sans">ជ្រើសរើស</span>
-                        <CornerDownLeft size={14} />
-                      </div>
-                    ) : (
-                      <ChevronRight size={18} className="text-gray-300" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            <div className="flex items-center justify-center h-full text-gray-400 text-xl">មិនមានទិន្នន័យ</div>
           )}
-        </div>
-
-        {/* Footer Help */}
-        <div className="bg-gray-50/80 backdrop-blur-sm px-6 py-3 border-t flex items-center justify-between text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5">
-              <span className="flex items-center justify-center w-5 h-5 bg-white border rounded shadow-sm"><ArrowUp size={10} /></span>
-              <span className="flex items-center justify-center w-5 h-5 bg-white border rounded shadow-sm"><ArrowDown size={10} /></span>
-              រុករក
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="flex items-center justify-center px-1.5 h-5 bg-white border rounded shadow-sm">ENTER</span> ជ្រើសរើស
-            </div>
-          </div>
-          
-          <div className="hidden sm:block italic">
-            ច្រកចេញចូលតែមួយ
-          </div>
         </div>
       </div>
     </div>
